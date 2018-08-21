@@ -11,24 +11,40 @@
                 </div>
             </div>
             <div class="orderform_header">
-                <div class="orderform_header_list" v-for="(list,key) in tabarr" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">{{list.name}}</div>
+                <div class="orderform_header_list" v-for="(list,key) in tabarr" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">
+                    {{list.name}}
+                    <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                        <button type="default" formType="submit"></button>
+                    </form>
+                </div>
                 <div class="orderform_header_xuan" @click="shaixuan()">筛选
                     <img class="orderform_header_xiajian" v-if="!meunshow" src="/static/image/xiajian.png" alt="">
                     <img class="orderform_header_xiajian" v-if="meunshow" src="/static/image/shangjian.png" alt="">
-                </div>
-                <div class="orderform_header_menu" v-show="meunshow">
-                    <div class="header_menu_list" @click="delivery('堂食')">堂食</div>
-                    <div class="header_menu_list" @click="delivery('外卖')">外卖</div>
+                    <div class="orderform_header_menu" v-show="meunshow">
+                        <div class="header_menu_list" @click="delivery('堂食')">堂食</div>
+                        <div class="header_menu_list" @click="delivery('外卖')">外卖</div>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="zhanweifu" style="margin-top: 208rpx;"></div>
         <div class="orderform_nav_matter" v-if="loadingStatus && !abnorType">
             <div class="orderform_nav_container clearfix" v-for="(item,index) in indent" :key="index">
-                <div class="orderform_main_header">
+                <div class="orderform_main_header_c">
                     <div class="orderform_main_left">订单编号：{{item.id}}</div>
-                    <div class="orderform_main_left">桌号：{{item.table_number}}</div>
                     <div class="orderform_main_right">{{item.sta}}</div>
+                </div>
+                <div class="orderform_main_header_c">
+                    <div class="orderform_main_left">桌号&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp：{{item.table_number}}</div>
+                </div>
+                <div class="orderform_main_header_c">
+                    <div class="orderform_main_left">下单时间：{{item.updated_at}}</div>
+                </div>
+                <div class="orderform_main_header_c">
+                    <div class="orderform_main_left">顾客姓名：{{item.real_name}}</div>
+                </div>
+                <div class="orderform_main_header">
+                    <div class="orderform_main_left">手机号&nbsp&nbsp&nbsp：{{item.mobile}}</div>
                 </div>
                 <div class="orderform_nav_border clearfix">
                     <div class="orderform_nav_item" v-for="(list,key) in item.goods_items" :key="key">
@@ -98,7 +114,9 @@ export default {
         //   
           search: '',
           form_id:'',
-          openid:null
+          openid:null,
+        //   防止重复点击
+          entid: null
       }
   },
   computed: {
@@ -127,18 +145,33 @@ export default {
       this.order(id)
   },
   methods:{
+     submit(e) {
+        var _this = this
+        console.log('213213')
+        var openid = wx.getStorageSync('openid')
+        this.$post('/restapi/bgoods/getformid',{
+            form_id: e.target.formId,
+            openid: openid,
+            })
+        .then(function (res) {
+            console.log(res)
+        })
+        .catch(function(res) {
+            console.log(res)
+        })
+      },
       abnortap(){
           this.loadingStatus = false
           this.$refs.loading.show()
       },
-    //   搜索
+      //   搜索
       confirm(e) {
           this.search = e.target.value
           this.indent = []
           this.currentPage = 1
           this.order('')
       },
-    //   
+      //   
       refund(e,a) {
           const url = '../refund/main?id='+ e
           wx.navigateTo({ url })
@@ -151,8 +184,12 @@ export default {
           this.meunshow = !this.meunshow
       },
       tabarrs(id) {
-          this.currentPage = 1
           this.listid = id
+          if (this.listid == this.entid) {
+              return
+          }
+          this.currentPage = 1
+          this.entid = this.listid
           this.indent = []
           this.search = ''
           this.order(id)
@@ -276,7 +313,7 @@ export default {
 .orderform_header {
     width: 100%;
     height: 103rpx;
-    position: relative;
+    /* position: relative; */
 }
 .orderform_header_list {
     float: left;
@@ -289,6 +326,7 @@ export default {
     box-sizing: border-box;
     color: #333;
     text-align: center;
+    position: relative;
     z-index: 2999;
 }
 .orderform_header_xuan {
@@ -313,8 +351,8 @@ export default {
 }
 .orderform_header_menu {
     position: absolute;
-    top: 103rpx;
-    right: 0rpx;
+    top: 100rpx;
+    right: -10rpx;
     font-size: 16px;
     line-height: 90rpx;
     color: #333;
@@ -333,6 +371,12 @@ export default {
     width: 100%;
 }
 /* 订单上部 */
+.orderform_main_header_c {
+    width: 100%;
+    height: 77rpx;
+    line-height: 77rpx;
+    font-size: 16px;
+}
 .orderform_main_header {
     width: 100%;
     height: 77rpx;

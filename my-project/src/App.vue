@@ -48,4 +48,16 @@ export default {
 }
 .clearfix:after {content:"."; display:block; height:0; visibility:hidden; clear:both; } */
 .clearfix { zoom:1; }
+button{
+  position: static;
+  background-color: #fff;
+}
+.tab_buttom_on {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
 </style>

@@ -16,6 +16,7 @@
     box-sizing: border-box;
     color: #333;
     text-align: center;
+    position: relative;
 }
 .orderform_header_xuan {
     float: left;
@@ -109,7 +110,12 @@
 <template>
     <div>
         <div class="orderform_header">
-            <div class="orderform_header_list" v-for="(list,key) in menus" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">{{list.name}}</div>
+            <div class="orderform_header_list" v-for="(list,key) in menus" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">
+                <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                </form>
+                {{list.name}}
+            </div>
                 <div class="orderform_header_xuan" @click="zidingyi()">自定义
                     <img class="orderform_header_xiajian" v-if="!meunshow" src="/static/image/xiajian.png" alt="">
                     <img class="orderform_header_xiajian" v-if="meunshow" src="/static/image/shangjian.png" alt="">
@@ -130,7 +136,7 @@
                     <img class="title_column_img" src="/static/image/qianbao.png" alt="">
                     <span class="title_column_span" :class="dj == 1 ? 'column_span_red' : ''">销售额</span>
                 </div>
-                <div class="title_column_divtwo">{{marketobj.allprice}}<span class="title_summary_span">(万元)</span></div>
+                <div class="title_column_divtwo">{{marketobj.allprice || 0}}<span class="title_summary_span">(元)</span></div>
             </div>
             <div class="shuxian"></div>
             <div class="finance_title_column" @click="dianji('profit',2)">
@@ -138,7 +144,7 @@
                     <img class="title_column_img" src="/static/image/yingxiao.png" alt="">
                     <span class="title_column_span" :class="dj == 2 ? 'column_span_red' : ''">提成利润</span>
                 </div>
-                <div class="title_column_divtwo">{{marketobj.allnum}}<span class="title_summary_span">(万件)</span></div>
+                <div class="title_column_divtwo">{{marketobj.allnum || 0}}<span class="title_summary_span">(件)</span></div>
             </div>
         </div>
         <div class="finance_main_content" v-if="loadingStatus && !abnorType">
@@ -207,6 +213,8 @@ export default {
           //   组件需要
           loadingStatus: false,
           requestStatus: '',
+        //   防止重复点击
+          entid: null
       }
   },
   computed: {
@@ -233,6 +241,21 @@ export default {
       this.financeitems()
   },
   methods:{
+      submit(e) {
+            var _this = this
+            console.log('213213')
+            var openid = wx.getStorageSync('openid')
+            this.$post('/restapi/bgoods/getformid',{
+                form_id: e.target.formId,
+                openid: openid,
+                })
+            .then(function (res) {
+                console.log(res)
+            })
+            .catch(function(res) {
+                console.log(res)
+            })
+        },
       abnortap(){
           this.loadingStatus = false
           this.$refs.loading.show()
@@ -244,9 +267,13 @@ export default {
           this.dj = i
       },
       tabarrs(id) {
+          this.listid = id
+          if ( this.listid == this.entid ) {
+              return
+          }
+          this.entid = this.listid
           this.from = ''
           this.to = ''
-          this.listid = id
           this.financeitems()
       },
       zidingyi () {

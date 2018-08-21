@@ -36,18 +36,30 @@
               <div class="subnav_submenu_tag" @click="financeViewTap">
                   <img class="subnav_submenu_img" src="/static/image/caiwu.png" alt="">
                   <span class="subnav_submenu_name">财务报表</span>
+                  <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                  </form>
               </div>
               <div class="subnav_submenu_tag" @click="pandectViewTap">
                   <img class="subnav_submenu_img" src="/static/image/shangpin2.png" alt="">
                   <span class="subnav_submenu_name">商品总览</span>
+                  <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                  </form>
               </div>
               <div class="subnav_submenu_tag" @click="orderViewTap">
                   <img class="subnav_submenu_img" src="/static/image/dingdan1.png" alt="">
                   <span class="subnav_submenu_name">全部订单</span>
+                  <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                  </form>
               </div>
               <div class="subnav_submenu_tag" @click="shopViewTap">
                   <img class="subnav_submenu_img" src="/static/image/dianpu.png" alt="">
                   <span class="subnav_submenu_name">店铺信息</span>
+                  <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                  </form>
               </div>
           </div>
       </div>
@@ -65,6 +77,21 @@ export default {
       }
   },
   methods:{
+        submit(e) {
+            var _this = this
+            console.log('213213')
+            var openid = wx.getStorageSync('openid')
+            this.$post('/restapi/bgoods/getformid',{
+                form_id: e.target.formId,
+                openid: openid,
+                })
+            .then(function (res) {
+                console.log(res)
+            })
+            .catch(function(res) {
+                console.log(res)
+            })
+        },
         shopViewTap () {
           const url = '../setupshop/main'
           wx.navigateTo({ url })
@@ -111,10 +138,16 @@ export default {
             frontColor: '#ffffff',
             backgroundColor: '#077cf4',
         })
-        this.merchant_name = wx.getStorageSync('merchant_name')
-        this.merchant_id = wx.getStorageSync('merchant_id')
-        this.login_time = wx.getStorageSync('login_time')
-        this.message()
+        // this.merchant_name = wx.getStorageSync('merchant_name')
+        // this.merchant_id = wx.getStorageSync('merchant_id')
+        // this.login_time = wx.getStorageSync('login_time')
+        // this.message()
+  },
+  onShow() {
+      this.merchant_name = wx.getStorageSync('merchant_name')
+      this.merchant_id = wx.getStorageSync('merchant_id')
+      this.login_time = wx.getStorageSync('login_time')
+      this.message()
   },
   created () {
   
@@ -189,6 +222,7 @@ export default {
     border: 1rpx solid #eee;
     box-sizing: border-box;
     float: left;
+    position: relative;
 }
 .subnav_submenu_img {
     width: 70rpx;

@@ -16,6 +16,9 @@
         <div class="header_tab">
             <div class="tab_key" v-for="(item,index) in tabarr" :key="index" @click="tabred(index,item.name)">
                 <span class="tab_span" :class="tabkey == index ? 'tab_red' : ''">{{item.name}}</span>
+                <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                </form>
             </div>
         </div>
         <div class="tab_title" v-for="(item,index) in tabarr" :key="index" v-if="tabkey == index">{{item.name}}</div>
@@ -201,6 +204,18 @@ export default {
     },
     submit(e) {
         this.formid = e.target.formId
+        var _this = this
+        console.log('213213')
+        this.$post('/restapi/bgoods/getformid',{
+            form_id: _this.formid,
+            openid:_this.openid,
+            })
+        .then(function (res) {
+            console.log(res)
+        })
+        .catch(function(res) {
+            console.log(res)
+        })
     },
     queren(id) {
       var _this = this
@@ -217,9 +232,9 @@ export default {
             icon: 'success',
             duration: 1000
           })
-          _this.tabkey = 1
-          _this.ontabkey = 1
-          _this.status = 3
+          _this.tabkey = 0
+          _this.ontabkey = 0
+          _this.status = 1
           _this.currentPage = 1
           _this.inquire = []
           _this.indent()
@@ -239,15 +254,12 @@ export default {
           this.search = ''
           this.inquire = []
           if (v == '进行中') {
-              console.log(111111)
               this.status = 1
               this.indent()
           }else if ( v == '已完成') {
-              console.log(222222)
               this.status = 3
               this.indent()
           }else if ( v == '售后') {
-              console.log(333333)
               this.status = 4
               this.indent()
           }
@@ -382,6 +394,8 @@ export default {
     line-height: 125rpx;
     text-align: center;
     cursor: pointer;
+    z-index: 999;
+    position: relative;
 }
 .tab_span {
     color: #989898;

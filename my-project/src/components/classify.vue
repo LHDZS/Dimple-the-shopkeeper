@@ -1,8 +1,18 @@
 <template>
     <div class="classify">
         <div class="classify_header_lfet">
-            <div class="header_lfet_item" :class="itemid == '' ? 'lfet_item_white' : ''" @click="classifyone">全部</div>
-            <div class="header_lfet_item" :class="itemid == item.id ? 'lfet_item_white' : ''" v-for="(item,index) in classify" :key="index" @click="classifyid(item.id)">{{item.name}}</div>
+            <div class="header_lfet_item" :class="itemid == '' ? 'lfet_item_white' : ''" @click="classifyone">
+                <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                </form>
+                全部
+            </div>
+            <div class="header_lfet_item" :class="itemid == item.id ? 'lfet_item_white' : ''" v-for="(item,index) in classify" :key="index" @click="classifyid(item.id)">
+                <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                </form>
+                {{item.name}}
+            </div>
         </div>
         <div class="classify_header_right">
             <div class="header_right_link" v-for="(link,key) in commodity" :key="key">
@@ -34,6 +44,21 @@ export default {
         }
     },
     methods: { 
+        submit(e) {
+            var _this = this
+            console.log('213213')
+            var openid = wx.getStorageSync('openid')
+            this.$post('/restapi/bgoods/getformid',{
+                form_id: e.target.formId,
+                openid: openid,
+                })
+            .then(function (res) {
+                console.log(res)
+            })
+            .catch(function(res) {
+                console.log(res)
+            })
+        },
         // 全部
         classifyone () {
             if (this.itemid != '') {
@@ -74,6 +99,7 @@ export default {
     text-align: left;
     color: #898989;
     box-sizing: border-box;
+    position: relative;
     font-size: 14px;
 }
 .lfet_item_white {

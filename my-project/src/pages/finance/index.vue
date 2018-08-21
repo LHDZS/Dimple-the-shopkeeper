@@ -16,6 +16,7 @@
     box-sizing: border-box;
     color: #333;
     text-align: center;
+    position: relative;
 }
 .orderform_header_xuan {
     float: left;
@@ -144,12 +145,40 @@
     top: 0;
     left: 43%;
 }
+/* 表格 */
+.finance_table {
+    width: 100%;
+    height: 80rpx;
+    display: flex;
+}
+.finance_table_item {
+    flex: 1;
+    font-size: 28rpx;
+    text-align: center;
+    border: 1rpx solid #666;
+    margin: 0rpx 0rpx -1rpx -1rpx ;
+}
+.finance_table_item_d {
+    line-height: 80rpx;
+}
+.finance_table_item_b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+}
 </style>
 
 <template>
     <div>
         <div class="orderform_header">
-            <div class="orderform_header_list" v-for="(list,key) in menus" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">{{list.name}}</div>
+            <div class="orderform_header_list" v-for="(list,key) in menus" :key="key" :class="listid == list.id ? 'header_list_red' : '' " @click="tabarrs(list.id)">
+                <form @submit="submit" report-submit='true' class="tab_buttom_on">
+                    <button type="default" formType="submit"></button>
+                </form>
+                {{list.name}}
+            </div>
                 <div class="orderform_header_xuan" @click="zidingyi()">自定义
                     <img class="orderform_header_xiajian" v-if="!meunshow" src="/static/image/xiajian.png" alt="">
                     <img class="orderform_header_xiajian" v-if="meunshow" src="/static/image/shangjian.png" alt="">
@@ -164,13 +193,13 @@
             </div>
         </div>
         <div class="zhanweifu"></div>
-        <div class="finance_title">
+        <!-- <div class="finance_title">
             <div class="finance_title_column" @click="dianji('price',1)">
                 <div class="title_column_div">
                     <img class="title_column_img" src="/static/image/qianbao.png" alt="">
                     <span class="title_column_span" :class="dj == 1 ? 'column_span_red' : ''">销售额</span>
                 </div>
-                <div class="title_column_divtwo">{{marketobj.allprice}}<span class="title_summary_span">(万元)</span></div>
+                <div class="title_column_divtwo">{{marketobj.allprice}}<span class="title_summary_span">(元)</span></div>
             </div>
             <div class="shuxian"></div>
             <div class="finance_title_column" @click="dianji('num',2)">
@@ -178,17 +207,33 @@
                     <img class="title_column_img" src="/static/image/yingxiao.png" alt="">
                     <span class="title_column_span" :class="dj == 2 ? 'column_span_red' : ''">销售量</span>
                 </div>
-                <div class="title_column_divtwo">{{marketobj.allnum}}<span class="title_summary_span">(万件)</span></div>
+                <div class="title_column_divtwo">{{marketobj.allnum}}<span class="title_summary_span">(件)</span></div>
             </div>
-        </div>
+        </div> -->
         <div class="finance_main_content" v-if="loadingStatus && !abnorType">
-            <div class="finance_main_content_item" v-for="(item,key) in marketobj.items" :key="key">
+            <!-- <div class="finance_main_content_item" v-for="(item,key) in marketobj.items" :key="key">
                 <div class="main_content_item_name">{{item.goods_name}}</div>
                 <div class="main_content_item_strip">
                     <div class="main_content_item_strip_red" :style="{width:item.nummax}"></div>
                     <div class="main_content_item_strip_name">{{item.number}}</div>
                 </div>
+            </div> -->
+            <div class="finance_table">
+                <div class="finance_table_item">
+                    <div class="finance_table_item_d">商品</div>
+                </div>
+                <div class="finance_table_item" v-for="(list,index) in lists" :key="index">
+                    <div>{{list}}</div>
+                    <div>（元）</div>
+                </div>
             </div>
+            <div class="finance_table" v-for="(item,key) in marketobj" :key="key">
+                <div class="finance_table_item"><div :class="item.goods_name.length <= 5 ? 'finance_table_item_d' : 'finance_table_item_b'">{{item.goods_name}}</div></div>
+                <div class="finance_table_item"><div class="finance_table_item_d">{{item.allprice}}</div></div>
+                <div class="finance_table_item"><div class="finance_table_item_d">{{item.amount}}</div></div>
+                <div class="finance_table_item"><div class="finance_table_item_d">{{item.per_extract}}</div></div>
+                <div class="finance_table_item"><div class="finance_table_item_d">{{item.extract}}</div></div>
+             </div>   
         </div>
         <div v-if="loadingStatus && abnorType">
             <wk-abnor :type=" abnorType " @abnortap=" abnortap "></wk-abnor>
@@ -215,9 +260,12 @@ export default {
             {name:'近一月',id:3},
             {name:'近一年',id:4}
           ],
+          lists: [
+            '销售额','销售量','单件提成','总提成'
+          ],
           listid: 1,
           meunshow: false,
-          marketobj: {},
+          marketobj: [],
           dj:1,
           time:'09:01',
           from: '',
@@ -226,7 +274,13 @@ export default {
           login_time:'',
           //   组件需要
           loadingStatus: false,
-          requestStatus: ''
+          requestStatus: '',
+          //   防止重复点击
+          entid: null,
+          //   最大页数
+            currentPage: 1,
+            maxPage: 1,
+            perPage: 10,
       }
   },
   computed: {
@@ -244,6 +298,8 @@ export default {
       }
   },
   mounted() {
+      this.marketobj = []
+      this.currentPage = 1
       this.$refs.loading.show()
       this.merchant_id = wx.getStorageSync('merchant_id')
       this.login_time = wx.getStorageSync('login_time')
@@ -252,6 +308,20 @@ export default {
       this.bgoodsitme()
   },
   methods:{
+      submit(e) {
+            var _this = this
+            var openid = wx.getStorageSync('openid')
+            this.$post('/restapi/bgoods/getformid',{
+                form_id: e.target.formId,
+                openid: openid,
+                })
+            .then(function (res) {
+                console.log(res)
+            })
+            .catch(function(res) {
+                console.log(res)
+            })
+        },
       abnortap(){
           this.loadingStatus = false
           this.$refs.loading.show()
@@ -263,9 +333,15 @@ export default {
           this.dj = i
       },
       tabarrs(id) {
+          this.listid = id
+          if ( this.listid == this.entid ) {
+              return
+          }
+          this.currentPage = 1
+          this.marketobj = []
+          this.entid = this.listid
           this.from = ''
           this.to = ''
-          this.listid = id
           this.bgoodsitme()
       },
       zidingyi () {
@@ -280,7 +356,9 @@ export default {
                 time: this.listid ,
                 tag: tag ||'price',
                 from:this.from || '',
-                to: this.to || ''
+                to: this.to || '',
+                page: this.currentPage,
+                'per-page': this.perPage
               }
             )
             .then(function (res) {
@@ -293,15 +371,18 @@ export default {
                     }else {
                         _this.requestStatus = ''
                     }
-                    _this.marketobj = res.data
-                    if (res.data.items.length != 0) {
-                        var max = res.data.items[0].amount
-                        for (var i=0;i<res.data.items.length;i++) {
-                        if(max<res.data.items[i].amount)max=res.data.items[0].amount;
-                            res.data.items[i]['nummax'] = Math.ceil(res.data.items[i].amount/max*100) + '%'
-                            res.data.items[i]['number'] = Math.ceil(res.data.items[i].amount/max*100)
-                        }
+                    for (var i=0; i<res.data.items.length; i++) {
+                        _this.marketobj.push(res.data.items[i])
                     }
+                    _this.maxPage = res.data._meta.pageCount
+                    // if (res.data.items.length != 0) {
+                    //     var max = res.data.items[0].amount
+                    //     for (var i=0;i<res.data.items.length;i++) {
+                    //     if(max<res.data.items[i].amount)max=res.data.items[0].amount;
+                    //         res.data.items[i]['nummax'] = Math.ceil(res.data.items[i].amount/max*100) + '%'
+                    //         res.data.items[i]['number'] = Math.ceil(res.data.items[i].amount/max*100)
+                    //     }
+                    // }
                 }else {
                     wx.showToast({
                         title: res.data.data,
@@ -328,10 +409,19 @@ export default {
             }else {
                 console.log('请填写日期')
             }
+            this.currentPage = 1
+            this.marketobj = []
             this.listid = 5
             this.bgoodsitme()
         },
-  }
+  },
+  onReachBottom(){
+        this.currentPage++
+        if(this.currentPage <= this.maxPage){
+            this.$refs.loading.show()
+            this.bgoodsitme()
+        }
+    },
 }
 </script>
 
