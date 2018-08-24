@@ -168,6 +168,38 @@
     -webkit-box-orient:vertical;
     -webkit-line-clamp:2;
 }
+/* 分页 */
+.finance_paging {
+    width: 400rpx;
+    height: 50rpx;
+    margin: 0 auto;
+    margin-top: 15rpx;
+    font-size: 28rpx;
+    position: relative;
+}
+.finance_page_number {
+    float: left;
+    width: 80rpx;
+    height: 50rpx;
+    margin: 0 10rpx;
+    border: 1rpx solid #eee;
+    text-align: center;
+    line-height: 50rpx;
+}
+.finance_paging_first {
+    float: left;
+    padding: 5rpx;
+}
+.finance_paging_trail {
+    float: right;
+    padding: 5rpx;
+}
+.finance_paging_altogether {
+    position: absolute;
+    right: -60rpx;
+    bottom: 10rpx;
+    font-size: 22rpx;
+}
 </style>
 
 <template>
@@ -223,8 +255,8 @@
                     <div class="finance_table_item_d">商品</div>
                 </div>
                 <div class="finance_table_item" v-for="(list,index) in lists" :key="index">
-                    <div>{{list}}</div>
-                    <div>（元）</div>
+                    <div>{{list.name}}</div>
+                    <div>（{{list.pic}}）</div>
                 </div>
             </div>
             <div class="finance_table" v-for="(item,key) in marketobj" :key="key">
@@ -233,7 +265,16 @@
                 <div class="finance_table_item"><div class="finance_table_item_d">{{item.amount}}</div></div>
                 <div class="finance_table_item"><div class="finance_table_item_d">{{item.per_extract}}</div></div>
                 <div class="finance_table_item"><div class="finance_table_item_d">{{item.extract}}</div></div>
-             </div>   
+            </div>
+        </div>
+        <div class="finance_paging">
+            <div class="finance_paging_first" @click="pagingfirst">首页</div>
+            <div class="finance_paging_first" @click="previouspage">上一页</div>
+            <input class="finance_page_number" type="number" maxlength="3" @confirm="paginginput">
+            <!-- <div class="finance_page_number" v-for="(item,key) in paging" :key="key">{{item}}</div> -->
+            <div class="finance_paging_trail" @click="pagingtrail">尾页</div>
+            <div class="finance_paging_trail" @click="nextpage">下一页</div>
+            <div class="finance_paging_altogether" @click="pagingtrail">{{currentPage}}/{{maxPage}}</div>
         </div>
         <div v-if="loadingStatus && abnorType">
             <wk-abnor :type=" abnorType " @abnortap=" abnortap "></wk-abnor>
@@ -261,7 +302,10 @@ export default {
             {name:'近一年',id:4}
           ],
           lists: [
-            '销售额','销售量','单件提成','总提成'
+            {name:'销售额',pic:'元'},
+            {name:'销售量',pic:'件'},
+            {name:'单件提成',pic:'元'},
+            {name:'总提成',pic:'元'}
           ],
           listid: 1,
           meunshow: false,
@@ -277,10 +321,12 @@ export default {
           requestStatus: '',
           //   防止重复点击
           entid: null,
+          //分页器
+          paging: [],   
           //   最大页数
-            currentPage: 1,
-            maxPage: 1,
-            perPage: 10,
+          currentPage: 1,
+          maxPage: 1,
+          perPage: 10,
       }
   },
   computed: {
@@ -308,6 +354,49 @@ export default {
       this.bgoodsitme()
   },
   methods:{
+    //   输入框
+      paginginput (e) {
+          console.log(e.target.value)
+          this.currentPage = e.target.value
+          if(this.currentPage > 1 && this.currentPage <= this.maxPage){
+            this.$refs.loading.show()
+            this.bgoodsitme()
+          }else {
+            wx.showToast({
+                title: '超出页码范围',
+                icon: 'none',
+                duration: 1000
+            })
+          }
+      },
+    //   首页
+      pagingfirst() {
+          this.currentPage = 1
+          this.$refs.loading.show()
+          this.bgoodsitme()
+      },
+    //   尾页
+      pagingtrail() {
+          this.currentPage = this.maxPage
+          this.$refs.loading.show()
+          this.bgoodsitme()
+      },
+    //   上一页 
+      previouspage () {
+        if(this.currentPage > 1){
+            this.currentPage--
+            this.$refs.loading.show()
+            this.bgoodsitme()
+        }
+      },
+    //   下一页
+      nextpage () {
+        if(this.currentPage < this.maxPage){
+            this.currentPage++
+            this.$refs.loading.show()
+            this.bgoodsitme()
+        }
+      },
       submit(e) {
             var _this = this
             var openid = wx.getStorageSync('openid')
@@ -371,9 +460,16 @@ export default {
                     }else {
                         _this.requestStatus = ''
                     }
-                    for (var i=0; i<res.data.items.length; i++) {
-                        _this.marketobj.push(res.data.items[i])
-                    }
+                    _this.paging = []
+
+                    // for (var i=0;i<res.data._meta.pageCount;i++) {
+                    //     _this.paging.push(i+1)
+                    // }
+                    console.log(_this.paging)
+                    _this.marketobj = res.data.items
+                    // for (var i=0; i<res.data.items.length; i++) {
+                    //     _this.marketobj.push(res.data.items[i])
+                    // }
                     _this.maxPage = res.data._meta.pageCount
                     // if (res.data.items.length != 0) {
                     //     var max = res.data.items[0].amount
@@ -416,11 +512,12 @@ export default {
         },
   },
   onReachBottom(){
-        this.currentPage++
-        if(this.currentPage <= this.maxPage){
-            this.$refs.loading.show()
-            this.bgoodsitme()
-        }
+        // this.currentPage++
+        // console.log(1)
+        // if(this.currentPage <= this.maxPage){
+        //     this.$refs.loading.show()
+        //     this.bgoodsitme()
+        // }
     },
 }
 </script>

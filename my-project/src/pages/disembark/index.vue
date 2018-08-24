@@ -50,10 +50,10 @@
       <div class="disembark_header">
             <div style="height:250rpx"></div>
             <div class="disembark_header_div">
-                <input class="disembark_header_input" type="text" placeholder="电话号码" v-model="inputname" :value="inputname" confirm-type="search" @confirm="inputnames()">
+                <input class="disembark_header_input" type="text" placeholder="电话号码" v-model="inputname" :value="inputname" confirm-type="done" @confirm="inputnames()">
             </div>
             <div class="disembark_header_div">
-                <input class="disembark_header_input" type="text" placeholder="密码" v-model="inputmima" :value="inputmima" confirm-type="search" @confirm="inputmimas()">
+                <input class="disembark_header_input" type="text" placeholder="密码" v-model="inputmima" :value="inputmima" confirm-type="done" @confirm="inputmimas()">
             </div>
       </div>
       <form @submit="denglu" report-submit='true'>

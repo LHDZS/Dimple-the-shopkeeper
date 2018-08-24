@@ -186,6 +186,8 @@ export default {
   },
   data() {
       return {
+        //   储存当前点击状态
+          tag: null,
           echarts,
           onInit: initChart,
           option: {},
@@ -198,7 +200,10 @@ export default {
           ],
           listid: 1,
           meunshow: false,
-          marketobj: {},
+          marketobj: {
+              allnum:null,
+              allprice:null
+          },
           dj:1,
           time:'09:01',
           from: '',
@@ -264,6 +269,7 @@ export default {
           this.from = ''
           this.to = ''
           this.financeitems(tag)
+          this.tag = tag
           this.dj = i
       },
       tabarrs(id) {
@@ -274,7 +280,7 @@ export default {
           this.entid = this.listid
           this.from = ''
           this.to = ''
-          this.financeitems()
+          this.financeitems(this.tag)
       },
       zidingyi () {
           this.meunshow = !this.meunshow
@@ -285,7 +291,7 @@ export default {
               {
                 id:this.merchant_id,
                 login_time:this.login_time,
-                tag: tag ||'profit',
+                tag: tag ||'price',
                 time: this.listid ,
                 from:this.from || '',
                 to: this.to || ''
@@ -301,11 +307,14 @@ export default {
                     }else {
                         _this.requestStatus = ''
                     }
+                    _this.marketobj.allprice = res.data.totalprice
+                    _this.marketobj.allnum = res.data.totalprofit
+                    
                     let dats = []
                     let name = []
-                    for (var i in res.data) {
-                        dats.push(res.data[i].key)
-                        name.push(res.data[i].val)
+                    for (var i in res.data.res) {
+                        dats.push(res.data.res[i].key)
+                        name.push(res.data.res[i].val)
                     }
                     option = {
                         xAxis: {

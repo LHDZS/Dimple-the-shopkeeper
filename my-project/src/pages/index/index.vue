@@ -115,11 +115,6 @@ export default {
     wkAbnor,
     wkLoading
   },
-//   watch: {
-//     merchant_id(val, oldVal) {
-//       this.indent(1)
-//     }
-//   },
   computed: {
       abnorType(){
           // 0	网络错误
@@ -155,6 +150,13 @@ export default {
         }
         this.indent(1)
   },
+  onPullDownRefresh:function()
+  {
+    wx.showNavigationBarLoading() //在标题栏中显示加载
+    this.inquire = []
+    this.currentPage = 1
+    this.indent(this.tabkey)
+  },
   methods: {
     abnortap(){
         this.loadingStatus = false
@@ -175,6 +177,8 @@ export default {
           if(!res.data.tag) {
                 _this.loadingStatus = true
                 _this.$refs.loading.hide()
+                wx.hideNavigationBarLoading() //完成停止加载
+                wx.stopPullDownRefresh() //停止下拉刷新
                 if(res.data.items.length == 0){
                     _this.requestStatus = 404
                     return

@@ -52,6 +52,10 @@ button{
   position: static;
   background-color: #fff;
 }
+button:after{
+  content: '';
+  display: none;
+}
 .tab_buttom_on {
     position: absolute;
     top: 0;
