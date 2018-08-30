@@ -266,16 +266,17 @@
                 <div class="finance_table_item"><div class="finance_table_item_d">{{item.per_extract}}</div></div>
                 <div class="finance_table_item"><div class="finance_table_item_d">{{item.extract}}</div></div>
             </div>
+            <div class="finance_paging">
+                <div class="finance_paging_first" @click="pagingfirst">首页</div>
+                <div class="finance_paging_first" @click="previouspage">上一页</div>
+                <input class="finance_page_number" type="number" maxlength="3" @confirm="paginginput">
+                <!-- <div class="finance_page_number" v-for="(item,key) in paging" :key="key">{{item}}</div> -->
+                <div class="finance_paging_trail" @click="pagingtrail">尾页</div>
+                <div class="finance_paging_trail" @click="nextpage">下一页</div>
+                <div class="finance_paging_altogether" @click="pagingtrail">{{currentPage}}/{{maxPage}}</div>
+            </div>
         </div>
-        <div class="finance_paging">
-            <div class="finance_paging_first" @click="pagingfirst">首页</div>
-            <div class="finance_paging_first" @click="previouspage">上一页</div>
-            <input class="finance_page_number" type="number" maxlength="3" @confirm="paginginput">
-            <!-- <div class="finance_page_number" v-for="(item,key) in paging" :key="key">{{item}}</div> -->
-            <div class="finance_paging_trail" @click="pagingtrail">尾页</div>
-            <div class="finance_paging_trail" @click="nextpage">下一页</div>
-            <div class="finance_paging_altogether" @click="pagingtrail">{{currentPage}}/{{maxPage}}</div>
-        </div>
+        
         <div v-if="loadingStatus && abnorType">
             <wk-abnor :type=" abnorType " @abnortap=" abnortap "></wk-abnor>
         </div>

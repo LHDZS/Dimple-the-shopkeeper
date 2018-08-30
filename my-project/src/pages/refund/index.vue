@@ -244,7 +244,8 @@ export default {
             totalamount:0,
             inputv: '',
             merchant_id:'',
-            login_time:''
+            login_time:'',
+            fukuan:true,
         }
     },
     methods:{
@@ -277,43 +278,48 @@ export default {
                     thumb:item.thumb,
                 }
             })
-            this.$post('/restapi/bgoods-order/cancel',{
-                merchant_id:this.merchant_id,
-                id:this.indent.id,
-                login_time:this.login_time,
-                reason:this.inputv,
-                amount:this.totalprices,
-                own_id: 'm' + this.merchant_id,
-                goods_news: JSON.stringify(a)
-            })
-            .then(function (res) {
-                if (res.success) {
-                    if (!res.data.tag) {
-                        const url = '../orderform/main?id=4'
-                        wx.navigateTo({ url })
+            if ( this.fukuan ) {
+                this.fukuan = false
+                this.$post('/restapi/bgoods-order/cancel',{
+                    merchant_id:this.merchant_id,
+                    id:this.indent.id,
+                    login_time:this.login_time,
+                    reason:this.inputv,
+                    amount:this.totalprices,
+                    own_id: 'm' + this.merchant_id,
+                    goods_news: JSON.stringify(a)
+                })
+                .then(function (res) {
+                    if (res.success) {
+                        if (!res.data.tag) {
+                            const url = '../orderform/main?id=4'
+                            wx.navigateTo({ url })
+                        }else {
+                            wx.showToast({
+                                title: res.data.data,
+                                icon: 'success',
+                                duration: 1000
+                            })
+                            setTimeout(function(){
+                                const url = '../disembark/main'
+                                wx.reLaunch({ url })
+                            },2000)
+                            _this.fukuan = true
+                        }
                     }else {
                         wx.showToast({
-                            title: res.data.data,
-                            icon: 'success',
-                            duration: 1000
+                            title: res.data.message,
+                            icon: 'none',
+                            duration: 3000
                         })
-                        setTimeout(function(){
-                            const url = '../disembark/main'
-                            wx.reLaunch({ url })
-                        },2000)
+                        _this.fukuan = true
                     }
-                }else {
-                    wx.showToast({
-                        title: res.data.message,
-                        icon: 'none',
-                        duration: 1000
-                    })
-                }
-                
-            })
-            .catch(function(res) {
-                console.log(res)
-            })
+                    
+                })
+                .catch(function(res) {
+                    console.log(res)
+                })
+            }
         },
         // 完成
         achieve(e) {
