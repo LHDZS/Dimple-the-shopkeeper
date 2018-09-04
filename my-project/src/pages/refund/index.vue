@@ -252,6 +252,7 @@ export default {
         // 退款
         tuikuan () {
             var _this = this
+            console.log(11111)
             if (this.totalamount == 0) {
                 return wx.showToast({
                         title: '退款商品数量错误',
@@ -292,6 +293,7 @@ export default {
                 .then(function (res) {
                     if (res.success) {
                         if (!res.data.tag) {
+                            _this.fukuan = true
                             const url = '../orderform/main?id=4'
                             wx.navigateTo({ url })
                         }else {
@@ -304,7 +306,6 @@ export default {
                                 const url = '../disembark/main'
                                 wx.reLaunch({ url })
                             },2000)
-                            _this.fukuan = true
                         }
                     }else {
                         wx.showToast({
@@ -318,6 +319,12 @@ export default {
                 })
                 .catch(function(res) {
                     console.log(res)
+                })
+            }else {
+                wx.showToast({
+                    title: '无法退款',
+                    icon: 'none',
+                    duration: 3000
                 })
             }
         },

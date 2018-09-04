@@ -38,13 +38,16 @@
                     <div class="orderform_main_left">桌号&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp：{{item.table_number}}</div>
                 </div>
                 <div class="orderform_main_header_c">
-                    <div class="orderform_main_left">下单时间：{{item.updated_at}}</div>
+                    <div class="orderform_main_left">下单时间：{{item.created_at}}</div>
                 </div>
                 <div class="orderform_main_header_c">
                     <div class="orderform_main_left">顾客姓名：{{item.real_name}}</div>
                 </div>
-                <div class="orderform_main_header">
+                <div class="orderform_main_header_c">
                     <div class="orderform_main_left">手机号&nbsp&nbsp&nbsp：{{item.mobile}}</div>
+                </div>
+                <div class="orderform_main_header">
+                    <div class="orderform_main_left">原订单</div>
                 </div>
                 <div class="orderform_nav_border clearfix">
                     <div class="orderform_nav_item" v-for="(list,key) in item.goods_items" :key="key">
@@ -60,8 +63,41 @@
                         </div>
                     </div>
                 </div>
+                <!-- <div class="orderform_nav_border clearfix">
+                    <div class="orderform_nav_item" v-if="item.goods_items_refund && keys == 0" v-for="(iteme,keys) in item.goods_items_refund" :key="keys">
+                        <div v-for="(list,key) in iteme.goods_news" :key="key">
+                            <img class="orderform_nav_img" :src="list.thumb" alt="">
+                            <div class="orderform_nav_div">
+                                <div class="orderform_nav_name">{{list.goods_name}}</div>
+                                <div class="orderform_nav_specification">规格：{{list.props}}ml</div>
+                                <div class="orderform_footer_price">
+                                    <div class="footer_price_left"><span>￥</span><span class="footer_price_left_span">{{list.price/list.quantity}}</span></div>
+                                    <div class="footer_price_centre">数量：{{list.quantity}}</div>
+                                    <div class="footer_price_right">小计：￥{{list.price}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="orderform_main_header" v-if="item.status == 4">
+                    <div class="orderform_main_left">已退款信息</div>
+                </div>
+                <div class="orderform_nav_border clearfix" >
+                    <div class="orderform_nav_item" v-for="(list,key) in item.refund" :key="key">
+                        <img class="orderform_nav_img" :src="list.thumb" alt="">
+                        <div class="orderform_nav_div">
+                            <div class="orderform_nav_name">{{list.goods_name}}</div>
+                            <div class="orderform_nav_specification">规格：{{list.props}}ml</div>
+                            <div class="orderform_footer_price">
+                                <div class="footer_price_lefte"><span>￥</span><span>{{list.price}}</span></div>
+                                <div class="footer_price_centre">数量：{{list.quantity}}</div>
+                                <div class="footer_price_righte">小计：￥{{list.price*list.quantity}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="orderform_nav_content_footer">
-                    <div class="orderform_nav_content_left">总计：￥{{item.goods_price}}</div>
+                    <div class="orderform_nav_content_left">实付：￥{{item.goods_price}}</div>
                     <div class="orderform_nav_content_right">
                         <form @submit="submit" report-submit='true'>
                         <span class="nav_content_right_tuikuan" v-if="item.status != 4 && item.status != 0 && item.status != 5" @click="refund(item.id)">部分退款</span>
@@ -99,7 +135,6 @@ export default {
             {name:'退款/售后',id:4},
           ],
           listid: '',
-
           indent: [],
           meunshow: false,
           merchant_id: '',
@@ -134,11 +169,13 @@ export default {
     }
   },
   mounted() {
+      console.log(this.listid == '')
       this.$refs.loading.show()
       this.indent = []
       this.currentPage = 1
       var id = this.$root.$mp.query.id || ''
       this.listid = this.$root.$mp.query.id || ''
+      this.entid = this.listid
       this.openid = wx.getStorageSync('openid')
       this.merchant_id = wx.getStorageSync('merchant_id')
       this.login_time = wx.getStorageSync('login_time')
@@ -184,6 +221,7 @@ export default {
           this.meunshow = !this.meunshow
       },
       tabarrs(id) {
+          console.log(id)
           this.listid = id
           if (this.listid == this.entid) {
               return
@@ -218,7 +256,14 @@ export default {
                 _this.maxPage = res.data._meta.pageCount
                 for (var j=0; j<res.data.items.length; j++) {
                      _this.indent.push(res.data.items[j])
+                     if (res.data.items[j].goods_items_refund) {
+                         let goodsitem = res.data.items[j].goods_items_refund
+                         for (var k=0; k<goodsitem.length;k++) {
+                            console.log(goodsitem)
+                         }
+                     }
                 }
+
                 for (var i=0; i<_this.indent.length; i++) {
                     if (_this.indent[i].status == 0) {
                         _this.indent[i]['sta'] = '待支付'
@@ -452,6 +497,11 @@ export default {
     margin-right: 53rpx;
     font-size: 16px;
 }
+.footer_price_left_span {
+    display: inline-block;
+    width: 64rpx;
+    overflow: hidden;
+}
 .footer_price_centre {
     float: left;
     font-size: 14px;
@@ -461,6 +511,17 @@ export default {
     float: right;
     font-size: 16px;
     color: #ca0000;
+}
+.footer_price_lefte {
+    float: left;
+    color: #666;
+    margin-right: 53rpx;
+    font-size: 16px;
+}
+.footer_price_righte {
+    float: right;
+    font-size: 16px;
+    color: #666;
 }
 /* 页脚 */
 .orderform_nav_content_footer {
